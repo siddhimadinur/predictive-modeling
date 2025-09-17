@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data files
+data/raw/*.csv
+data/processed/*.csv
+*.pkl
+*.joblib
+
+# Model files
+models/trained_models/*.pkl
+models/trained_models/*.joblib
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Kaggle
+.kaggle/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
