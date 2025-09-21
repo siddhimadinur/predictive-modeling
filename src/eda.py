@@ -25,7 +25,20 @@ class EDAAnalyzer:
         """
         self.train_data = train_data.copy()
         self.test_data = test_data.copy() if test_data is not None else None
-        self.target_col = 'SalePrice'
+
+        # Auto-detect target column
+        target_candidates = ['SalePrice', 'median_house_value', 'price', 'target']
+        self.target_col = None
+
+        for col in target_candidates:
+            if col in self.train_data.columns:
+                self.target_col = col
+                break
+
+        if self.target_col is None:
+            print("⚠️ No target column found. Some analysis functions may not work.")
+        else:
+            print(f"🎯 Target column detected: '{self.target_col}'")
 
         # Store original data for reference
         self.original_train_shape = self.train_data.shape
