@@ -1,0 +1,12 @@
+{
+  "champion_model": "demo_california_housing_model.pkl",
+  "champion_r2": 0.7910751258792299,
+  "champion_rmse": 51597.05984667702,
+  "dataset": "california_housing_demo",
+  "training_samples": 1000,
+  "feature_count": 9,
+  "target_column": "median_house_value",
+  "all_models_trained": [
+    "demo"
+  ]
+}
