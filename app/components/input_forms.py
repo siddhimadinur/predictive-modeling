@@ -262,31 +262,20 @@ class CaliforniaPresets:
             # Show preset details in an attractive format
             st.success(f"✅ {selected_preset} configuration loaded!")
 
-            with st.expander("📊 View area details"):
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.write("**Location:**")
-                    st.write(f"• Longitude: {preset_data['longitude']}")
-                    st.write(f"• Latitude: {preset_data['latitude']}")
-                    st.write(f"• Ocean Proximity: {preset_data['ocean_proximity']}")
-
-                    st.write("**Housing:**")
-                    st.write(f"• Median Age: {preset_data['housing_median_age']} years")
-                    st.write(f"• Total Rooms: {preset_data['total_rooms']:,}")
-                    st.write(f"• Total Bedrooms: {preset_data['total_bedrooms']:,}")
-
-                with col2:
-                    st.write("**Demographics:**")
-                    st.write(f"• Population: {preset_data['population']:,}")
-                    st.write(f"• Households: {preset_data['households']:,}")
-                    st.write(f"• Median Income: ${preset_data['median_income']*10:,.0f}")
-
-                    # Calculate some ratios
-                    rooms_per_hh = preset_data['total_rooms'] / preset_data['households']
-                    people_per_hh = preset_data['population'] / preset_data['households']
-                    st.write(f"• Rooms per Household: {rooms_per_hh:.1f}")
-                    st.write(f"• People per Household: {people_per_hh:.1f}")
+            with st.expander("View area details"):
+                rooms_per_hh = preset_data['total_rooms'] / preset_data['households']
+                people_per_hh = preset_data['population'] / preset_data['households']
+                st.markdown(
+                    f"**Location:** {preset_data['longitude']}, {preset_data['latitude']} "
+                    f"({preset_data['ocean_proximity']})  \n"
+                    f"**Housing:** {preset_data['total_rooms']:,} rooms, "
+                    f"{preset_data['total_bedrooms']:,} bedrooms, "
+                    f"{preset_data['housing_median_age']} yrs old  \n"
+                    f"**Demographics:** Pop {preset_data['population']:,}, "
+                    f"{preset_data['households']:,} households, "
+                    f"${preset_data['median_income']*10:,.0f}K income  \n"
+                    f"**Ratios:** {rooms_per_hh:.1f} rooms/hh, {people_per_hh:.1f} people/hh"
+                )
 
             return preset_data
 
