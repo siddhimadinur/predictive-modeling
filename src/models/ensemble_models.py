@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, E
 try:
     import xgboost as xgb
     XGBOOST_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError, Exception):
     XGBOOST_AVAILABLE = False
     print("⚠️ XGBoost not available")
 
