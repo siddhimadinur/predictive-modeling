@@ -1,12 +1,21 @@
 {
-  "champion_model": "demo_california_housing_model.pkl",
-  "champion_r2": 0.7910751258792299,
-  "champion_rmse": 51597.05984667702,
-  "dataset": "california_housing_demo",
-  "training_samples": 1000,
-  "feature_count": 9,
+  "champion_model": "gradient_boosting_california_housing.pkl",
+  "champion_r2": 0.9778545122866654,
+  "champion_rmse": 13656.142139923331,
+  "champion_mae": 7965.326375851886,
+  "dataset": "california_housing",
+  "training_samples": 13209,
+  "validation_samples": 3303,
+  "feature_count": 39,
   "target_column": "median_house_value",
   "all_models_trained": [
-    "demo"
+    "linear",
+    "ridge",
+    "lasso",
+    "elasticnet",
+    "random_forest",
+    "gradient_boosting",
+    "extra_trees",
+    "polynomial"
   ]
 }

@@ -12,8 +12,8 @@ from .linear_models import (
 from .ensemble_models import (
     RandomForestModel,
     GradientBoostingModel,
-    XGBoostModel,
-    ExtraTreesModel
+    ExtraTreesModel,
+    XGBOOST_AVAILABLE
 )
 
 __all__ = [
@@ -24,6 +24,9 @@ __all__ = [
     'ElasticNetModel',
     'RandomForestModel',
     'GradientBoostingModel',
-    'XGBoostModel',
-    'ExtraTreesModel'
+    'ExtraTreesModel',
 ]
+
+if XGBOOST_AVAILABLE:
+    from .ensemble_models import XGBoostModel
+    __all__.append('XGBoostModel')
