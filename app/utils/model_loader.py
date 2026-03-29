@@ -144,109 +144,10 @@ class CaliforniaHousingModelLoader:
         Returns:
             Preprocessed DataFrame
         """
-        # Convert input to DataFrame
         input_df = pd.DataFrame([input_data])
 
-        # If we have feature names from training, ensure all features are present
         if self.feature_names:
-            # Add missing features with default values
-            for feature in self.feature_names:
-                if feature not in input_df.columns:
-                    # California housing specific defaults
-                    if 'distance_to_' in feature:
-                        # Calculate approximate distance (simplified)
-                        if 'Los_Angeles' in feature:
-                            lat_diff = abs(input_data.get('latitude', 34.0) - 34.05)
-                            lon_diff = abs(input_data.get('longitude', -118.2) - (-118.24))
-                            input_df[feature] = np.sqrt(lat_diff**2 + lon_diff**2)
-                        elif 'San_Francisco' in feature:
-                            lat_diff = abs(input_data.get('latitude', 37.8) - 37.77)
-                            lon_diff = abs(input_data.get('longitude', -122.4) - (-122.42))
-                            input_df[feature] = np.sqrt(lat_diff**2 + lon_diff**2)
-                        else:
-                            input_df[feature] = 1.0  # Default distance
-
-                    elif 'per_household' in feature:
-                        # Calculate ratios
-                        if 'rooms_per_household' in feature:
-                            rooms = input_data.get('total_rooms', 2500)
-                            households = input_data.get('households', 800)
-                            input_df[feature] = rooms / max(households, 1)
-                        elif 'population_per_household' in feature:
-                            population = input_data.get('population', 2000)
-                            households = input_data.get('households', 800)
-                            input_df[feature] = population / max(households, 1)
-
-                    elif 'bedrooms_per_room' in feature:
-                        bedrooms = input_data.get('total_bedrooms', 500)
-                        rooms = input_data.get('total_rooms', 2500)
-                        input_df[feature] = bedrooms / max(rooms, 1)
-
-                    elif 'is_northern_ca' in feature:
-                        latitude = input_data.get('latitude', 37.0)
-                        input_df[feature] = 1 if latitude > 36.0 else 0
-
-                    elif 'is_coastal' in feature:
-                        longitude = input_data.get('longitude', -118.0)
-                        input_df[feature] = 1 if longitude > -121.0 else 0
-
-                    elif feature.startswith('ocean_proximity_'):
-                        # One-hot encoded ocean proximity
-                        user_proximity = input_data.get('ocean_proximity', 'INLAND')
-                        feature_proximity = feature.replace('ocean_proximity_', '')
-                        input_df[feature] = 1 if user_proximity == feature_proximity else 0
-
-                    elif feature.startswith('income_category_'):
-                        # Income category encoding
-                        income = input_data.get('median_income', 5.0)
-                        if income <= 2: category = 'Very_Low'
-                        elif income <= 4: category = 'Low'
-                        elif income <= 6: category = 'Medium'
-                        elif income <= 8: category = 'High'
-                        elif income <= 10: category = 'Very_High'
-                        else: category = 'Ultra_High'
-
-                        feature_category = feature.replace('income_category_', '')
-                        input_df[feature] = 1 if category == feature_category else 0
-
-                    elif feature.startswith('age_category_'):
-                        # Age category encoding
-                        age = input_data.get('housing_median_age', 25)
-                        if age <= 10: category = 'New'
-                        elif age <= 20: category = 'Modern'
-                        elif age <= 30: category = 'Mature'
-                        elif age <= 40: category = 'Older'
-                        else: category = 'Vintage'
-
-                        feature_category = feature.replace('age_category_', '')
-                        input_df[feature] = 1 if category == feature_category else 0
-
-                    elif 'log_median_income' in feature:
-                        income = input_data.get('median_income', 5.0)
-                        input_df[feature] = np.log1p(income)
-
-                    elif 'squared' in feature:
-                        # Polynomial features
-                        base_feature = feature.replace('_squared', '')
-                        if base_feature in input_data:
-                            input_df[feature] = input_data[base_feature] ** 2
-
-                    elif 'interaction' in feature:
-                        # Interaction features
-                        if 'income_rooms' in feature:
-                            income = input_data.get('median_income', 5.0)
-                            rooms = input_data.get('total_rooms', 2500)
-                            input_df[feature] = income * rooms / 1000
-                        elif 'income_age' in feature:
-                            income = input_data.get('median_income', 5.0)
-                            age = input_data.get('housing_median_age', 25)
-                            input_df[feature] = income * (50 - age)
-
-                    else:
-                        # Default values for unknown features
-                        input_df[feature] = 0
-
-            # Reorder columns to match training feature order
+            # Reorder and fill any missing columns to match training features
             input_df = input_df.reindex(columns=self.feature_names, fill_value=0)
 
         return input_df
@@ -276,7 +177,7 @@ class CaliforniaHousingModelLoader:
 
             # Calculate additional info
             additional_info = {
-                'prediction_per_sqft': prediction / max(input_data.get('total_rooms', 1), 1) * 500,  # Rough estimate
+                'price_per_room': prediction / max(input_data.get('ave_rooms', 1), 1),
                 'income_to_price_ratio': prediction / max(input_data.get('median_income', 1) * 10000, 1),
                 'model_used': model_name
             }
@@ -381,7 +282,7 @@ class CaliforniaHousingModelLoader:
         errors = []
 
         # Check required fields
-        required_fields = ['median_income', 'total_rooms', 'housing_median_age', 'longitude', 'latitude']
+        required_fields = ['median_income', 'ave_rooms', 'housing_median_age', 'longitude', 'latitude']
         for field in required_fields:
             if field not in input_data or input_data[field] is None:
                 errors.append(f"Missing required field: {field}")
@@ -404,13 +305,9 @@ class CaliforniaHousingModelLoader:
                 errors.append("Housing age must be between 1 and 52 years")
 
         # Logical consistency checks
-        if input_data.get('total_bedrooms') and input_data.get('total_rooms'):
-            if input_data['total_bedrooms'] > input_data['total_rooms']:
-                errors.append("Total bedrooms cannot exceed total rooms")
-
-        if input_data.get('households') and input_data.get('population'):
-            if input_data['households'] > input_data['population']:
-                errors.append("Number of households cannot exceed population")
+        if input_data.get('ave_bedrooms') and input_data.get('ave_rooms'):
+            if input_data['ave_bedrooms'] > input_data['ave_rooms']:
+                errors.append("Average bedrooms cannot exceed average rooms per household")
 
         return len(errors) == 0, errors
 
@@ -470,28 +367,23 @@ class CaliforniaHousingModelLoader:
         else:
             context['housing_character'] = "Mature/vintage housing area"
 
-        # Density analysis
-        rooms = input_data.get('total_rooms', 2500)
-        households = input_data.get('households', 800)
-        if households > 0:
-            rooms_per_household = rooms / households
-            if rooms_per_household < 4:
-                context['density'] = "High density area (small units)"
-            elif rooms_per_household < 6:
-                context['density'] = "Medium density area"
-            else:
-                context['density'] = "Low density area (large homes)"
+        # Density analysis based on average rooms per household
+        ave_rooms = input_data.get('ave_rooms', 5.4)
+        if ave_rooms < 4:
+            context['density'] = "High density area (small units)"
+        elif ave_rooms < 6:
+            context['density'] = "Medium density area"
+        else:
+            context['density'] = "Low density area (large homes)"
 
-        # Ocean proximity context
-        proximity = input_data.get('ocean_proximity', 'INLAND')
-        proximity_descriptions = {
-            'NEAR BAY': "Close to San Francisco Bay - premium location",
-            'NEAR OCEAN': "Close to Pacific Ocean - highly desirable",
-            '<1H OCEAN': "Within 1 hour of ocean - good access",
-            'INLAND': "Inland location - more affordable",
-            'ISLAND': "Island location - unique premium"
-        }
-        context['location_appeal'] = proximity_descriptions.get(proximity, "Standard location")
+        # Occupancy context
+        ave_occupancy = input_data.get('ave_occupancy', 3.0)
+        if ave_occupancy < 2.5:
+            context['location_appeal'] = "Low occupancy (smaller households)"
+        elif ave_occupancy < 3.5:
+            context['location_appeal'] = "Average occupancy"
+        else:
+            context['location_appeal'] = "High occupancy (larger households)"
 
         return context
 

@@ -457,30 +457,29 @@ def render_editable_preset_form(preset_data: Dict[str, Any], input_form: Califor
 
         with col1:
             st.markdown("**Location**")
-            longitude = st.number_input("Longitude", min_value=-124.5, max_value=-114.0, value=preset_data.get('longitude', -118.0), step=0.1)
-            latitude = st.number_input("Latitude", min_value=32.5, max_value=42.0, value=preset_data.get('latitude', 37.0), step=0.1)
-            ocean_proximity = st.selectbox("Ocean Proximity", options=['NEAR BAY', 'NEAR OCEAN', 'INLAND', '<1H OCEAN', 'ISLAND'], index=['NEAR BAY', 'NEAR OCEAN', 'INLAND', '<1H OCEAN', 'ISLAND'].index(preset_data.get('ocean_proximity', 'INLAND')))
+            longitude = st.number_input("Longitude", min_value=-124.5, max_value=-114.0, value=preset_data.get('longitude', -119.6), step=0.1)
+            latitude = st.number_input("Latitude", min_value=32.5, max_value=42.0, value=preset_data.get('latitude', 35.6), step=0.1)
 
         with col2:
             st.markdown("**Housing**")
-            total_rooms = st.number_input("Total Rooms", min_value=500, max_value=8000, value=preset_data.get('total_rooms', 2500), step=50)
-            total_bedrooms = st.number_input("Total Bedrooms", min_value=100, max_value=1500, value=preset_data.get('total_bedrooms', 500), step=10)
-            housing_median_age = st.number_input("Housing Age (years)", min_value=1, max_value=52, value=preset_data.get('housing_median_age', 25), step=1)
+            ave_rooms = st.number_input("Avg Rooms/Household", min_value=1.0, max_value=15.0, value=preset_data.get('ave_rooms', 5.4), step=0.1)
+            ave_bedrooms = st.number_input("Avg Bedrooms/Household", min_value=0.3, max_value=5.0, value=preset_data.get('ave_bedrooms', 1.1), step=0.1)
+            housing_median_age = st.number_input("Housing Age (years)", min_value=1, max_value=52, value=preset_data.get('housing_median_age', 29), step=1)
 
         with col3:
             st.markdown("**Demographics**")
-            population = st.number_input("Population", min_value=300, max_value=5000, value=preset_data.get('population', 2000), step=50)
-            households = st.number_input("Households", min_value=100, max_value=1800, value=preset_data.get('households', 800), step=10)
-            median_income = st.number_input("Median Income ($10K)", min_value=0.5, max_value=15.0, value=preset_data.get('median_income', 5.0), step=0.1)
+            population = st.number_input("Population", min_value=3, max_value=10000, value=preset_data.get('population', 1425), step=50)
+            ave_occupancy = st.number_input("Avg Household Size", min_value=0.5, max_value=10.0, value=preset_data.get('ave_occupancy', 3.1), step=0.1)
+            median_income = st.number_input("Median Income ($10K)", min_value=0.5, max_value=15.0, value=preset_data.get('median_income', 3.9), step=0.1)
 
         submitted = st.form_submit_button("Update Prediction")
 
         if submitted:
             updated_data = {
-                'longitude': longitude, 'latitude': latitude, 'ocean_proximity': ocean_proximity,
-                'total_rooms': total_rooms, 'total_bedrooms': min(total_bedrooms, total_rooms),
+                'longitude': longitude, 'latitude': latitude,
+                'ave_rooms': ave_rooms, 'ave_bedrooms': min(ave_bedrooms, ave_rooms),
                 'housing_median_age': housing_median_age,
-                'population': population, 'households': min(households, population),
+                'population': population, 'ave_occupancy': ave_occupancy,
                 'median_income': median_income,
             }
             input_form.input_data = updated_data
@@ -542,8 +541,8 @@ def render_prediction_panel(model_name: str, input_data: Dict[str, Any]):
             if additional_info and 'income_to_price_ratio' in additional_info:
                 st.metric("Price-to-Income", f"{additional_info['income_to_price_ratio']:.1f}x")
         with m_cols[1]:
-            if additional_info and 'prediction_per_sqft' in additional_info:
-                st.metric("Est. $/Room", f"${additional_info['prediction_per_sqft']:,.0f}")
+            if additional_info and 'price_per_room' in additional_info:
+                st.metric("Est. $/Room", f"${additional_info['price_per_room']:,.0f}")
 
         # --- Confidence interval ---
         if additional_info and 'confidence_interval' in additional_info:
