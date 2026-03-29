@@ -21,8 +21,7 @@ class CaliforniaHousingModelLoader:
         self.feature_names = None
         self.deployment_info = None
 
-    @st.cache
-    def load_models(_self, model_dir: Path = None) -> Dict[str, Any]:
+    def load_models(self, model_dir: Path = None) -> Dict[str, Any]:
         """
         Load all available California housing models.
 
@@ -39,8 +38,6 @@ class CaliforniaHousingModelLoader:
         metadata = {}
 
         if not model_dir.exists():
-            st.error(f"Model directory not found: {model_dir}")
-            st.info("💡 Please ensure Phase 4 (Model Training) has been completed")
             return models
 
         # Load deployment summary if available
@@ -48,9 +45,9 @@ class CaliforniaHousingModelLoader:
         if deployment_path.exists():
             try:
                 with open(deployment_path, 'r') as f:
-                    _self.deployment_info = json.load(f)
-            except Exception as e:
-                st.warning(f"Could not load deployment summary: {e}")
+                    self.deployment_info = json.load(f)
+            except Exception:
+                pass
 
         # Load individual model files
         for model_file in model_dir.glob("*california_housing*.pkl"):
@@ -75,22 +72,19 @@ class CaliforniaHousingModelLoader:
                     models[model_name] = model_data
                     metadata[model_name] = {}
 
-                st.success(f"✅ Loaded model: {model_name}")
+            except Exception:
+                pass
 
-            except Exception as e:
-                st.warning(f"Could not load model {model_file.name}: {str(e)}")
-
-        _self.models = models
-        _self.model_metadata = metadata
+        self.models = models
+        self.model_metadata = metadata
 
         if models:
             # Set feature names from first model with metadata
             for model_meta in metadata.values():
                 if model_meta.get('feature_names'):
-                    _self.feature_names = model_meta['feature_names']
+                    self.feature_names = model_meta['feature_names']
                     break
 
-        st.success(f"📊 Loaded {len(models)} California housing models")
         return models
 
     def get_available_models(self) -> List[str]:

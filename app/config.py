@@ -163,11 +163,19 @@ CALIFORNIA_PRESETS = {
 
 # UI Theme for California vibe
 UI_THEME = {
-    'primary_color': '#FF6B35',  # California sunset orange
-    'background_color': '#ffffff',
-    'secondary_background_color': '#f0f8ff',
-    'text_color': '#262730',
-    'font': 'sans serif'
+    'primary_color': '#E85D26',  # California sunset orange (refined)
+    'primary_gradient': 'linear-gradient(135deg, #E85D26 0%, #F09819 50%, #EDDE5D 100%)',
+    'accent_color': '#1B6B93',  # Pacific blue
+    'success_color': '#2E7D32',
+    'background_color': '#FAFBFD',
+    'card_background': 'rgba(255, 255, 255, 0.85)',
+    'secondary_background_color': '#F0F4F8',
+    'text_color': '#1A1A2E',
+    'text_secondary': '#64748B',
+    'font': 'sans serif',
+    'border_radius': '16px',
+    'shadow': '0 4px 24px rgba(0, 0, 0, 0.06)',
+    'shadow_hover': '0 8px 32px rgba(0, 0, 0, 0.12)',
 }
 
 # Display options
