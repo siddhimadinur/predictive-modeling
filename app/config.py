@@ -25,61 +25,62 @@ MODEL_CONFIG = {
 }
 
 # California Housing Feature configuration for input forms
+# Based on the real sklearn California Housing dataset
 FEATURE_CONFIG = {
     'numerical_features': {
         'median_income': {
             'label': 'Median Income (in $10,000s)',
             'min_value': 0.5,
             'max_value': 15.0,
-            'value': 5.0,
+            'value': 3.9,
             'step': 0.1,
-            'help': 'Median household income for the area in tens of thousands of dollars'
-        },
-        'total_rooms': {
-            'label': 'Total Rooms in Area',
-            'min_value': 500,
-            'max_value': 8000,
-            'value': 2500,
-            'step': 50,
-            'help': 'Total number of rooms in the census block group'
-        },
-        'total_bedrooms': {
-            'label': 'Total Bedrooms in Area',
-            'min_value': 100,
-            'max_value': 1500,
-            'value': 500,
-            'step': 10,
-            'help': 'Total number of bedrooms in the census block group'
+            'help': 'Median household income for the block group in tens of thousands of dollars'
         },
         'housing_median_age': {
             'label': 'Housing Median Age (years)',
             'min_value': 1,
             'max_value': 52,
-            'value': 25,
+            'value': 29,
             'step': 1,
-            'help': 'Median age of houses in the area'
+            'help': 'Median age of houses in the block group'
+        },
+        'ave_rooms': {
+            'label': 'Avg Rooms per Household',
+            'min_value': 1.0,
+            'max_value': 15.0,
+            'value': 5.4,
+            'step': 0.1,
+            'help': 'Average number of rooms per household in the block group'
+        },
+        'ave_bedrooms': {
+            'label': 'Avg Bedrooms per Household',
+            'min_value': 0.3,
+            'max_value': 5.0,
+            'value': 1.1,
+            'step': 0.1,
+            'help': 'Average number of bedrooms per household in the block group'
         },
         'population': {
-            'label': 'Population',
-            'min_value': 300,
-            'max_value': 5000,
-            'value': 2000,
+            'label': 'Block Group Population',
+            'min_value': 3,
+            'max_value': 10000,
+            'value': 1425,
             'step': 50,
             'help': 'Total population in the census block group'
         },
-        'households': {
-            'label': 'Number of Households',
-            'min_value': 100,
-            'max_value': 1800,
-            'value': 800,
-            'step': 10,
-            'help': 'Total number of households in the area'
+        'ave_occupancy': {
+            'label': 'Avg Household Size',
+            'min_value': 0.5,
+            'max_value': 10.0,
+            'value': 3.1,
+            'step': 0.1,
+            'help': 'Average number of people per household'
         },
         'longitude': {
             'label': 'Longitude',
             'min_value': -124.5,
             'max_value': -114.0,
-            'value': -118.0,
+            'value': -119.6,
             'step': 0.1,
             'help': 'Longitude coordinate (West Coast California)'
         },
@@ -87,77 +88,66 @@ FEATURE_CONFIG = {
             'label': 'Latitude',
             'min_value': 32.5,
             'max_value': 42.0,
-            'value': 37.0,
+            'value': 35.6,
             'step': 0.1,
             'help': 'Latitude coordinate (California range)'
         }
     },
-    'categorical_features': {
-        'ocean_proximity': {
-            'label': 'Ocean Proximity',
-            'options': ['NEAR BAY', 'NEAR OCEAN', 'INLAND', '<1H OCEAN', 'ISLAND'],
-            'value': 'INLAND',
-            'help': 'Proximity to the Pacific Ocean'
-        }
-    }
+    'categorical_features': {}
 }
 
 # Quick preset configurations for different California areas
+# Using real feature names matching the sklearn California Housing dataset
 CALIFORNIA_PRESETS = {
     "San Francisco Bay Area": {
-        'median_income': 12.0,
-        'total_rooms': 4000,
-        'total_bedrooms': 800,
+        'median_income': 8.5,
         'housing_median_age': 35,
-        'population': 3500,
-        'households': 1200,
+        'ave_rooms': 6.2,
+        'ave_bedrooms': 1.05,
+        'population': 1500,
+        'ave_occupancy': 2.8,
         'longitude': -122.4,
         'latitude': 37.8,
-        'ocean_proximity': 'NEAR BAY'
     },
     "Los Angeles Metro": {
-        'median_income': 8.5,
-        'total_rooms': 3500,
-        'total_bedrooms': 700,
-        'housing_median_age': 28,
-        'population': 4000,
-        'households': 1100,
+        'median_income': 5.0,
+        'housing_median_age': 30,
+        'ave_rooms': 5.0,
+        'ave_bedrooms': 1.05,
+        'population': 2000,
+        'ave_occupancy': 3.2,
         'longitude': -118.2,
         'latitude': 34.1,
-        'ocean_proximity': 'NEAR OCEAN'
     },
     "San Diego Area": {
-        'median_income': 9.0,
-        'total_rooms': 2800,
-        'total_bedrooms': 600,
-        'housing_median_age': 22,
-        'population': 2800,
-        'households': 950,
+        'median_income': 5.5,
+        'housing_median_age': 25,
+        'ave_rooms': 5.5,
+        'ave_bedrooms': 1.08,
+        'population': 1800,
+        'ave_occupancy': 3.0,
         'longitude': -117.2,
         'latitude': 32.7,
-        'ocean_proximity': 'NEAR OCEAN'
     },
     "Sacramento Valley": {
-        'median_income': 6.5,
-        'total_rooms': 2200,
-        'total_bedrooms': 450,
-        'housing_median_age': 18,
-        'population': 2200,
-        'households': 700,
+        'median_income': 4.2,
+        'housing_median_age': 20,
+        'ave_rooms': 5.8,
+        'ave_bedrooms': 1.1,
+        'population': 1200,
+        'ave_occupancy': 2.9,
         'longitude': -121.5,
         'latitude': 38.6,
-        'ocean_proximity': 'INLAND'
     },
     "Central Valley": {
-        'median_income': 4.5,
-        'total_rooms': 1800,
-        'total_bedrooms': 350,
-        'housing_median_age': 15,
-        'population': 1800,
-        'households': 550,
+        'median_income': 2.8,
+        'housing_median_age': 18,
+        'ave_rooms': 4.8,
+        'ave_bedrooms': 1.1,
+        'population': 1100,
+        'ave_occupancy': 3.3,
         'longitude': -120.0,
         'latitude': 36.0,
-        'ocean_proximity': 'INLAND'
     }
 }
 
