@@ -6,6 +6,18 @@ import PropertySliders from "@/components/PropertySliders";
 import PriceDisplay from "@/components/PriceDisplay";
 import { CALIFORNIA_CITIES } from "@/lib/cities";
 
+const INFLATION_MULTIPLIER = 4.5;
+
+// Pre-computed predictions loaded once
+let predictionsCache: Record<string, number> | null = null;
+
+async function loadPredictions(): Promise<Record<string, number>> {
+  if (predictionsCache) return predictionsCache;
+  const res = await fetch("/predictions.json");
+  predictionsCache = await res.json();
+  return predictionsCache!;
+}
+
 export default function Home() {
   const [city, setCity] = useState("Los Angeles");
   const [rooms, setRooms] = useState(4);
@@ -14,30 +26,22 @@ export default function Home() {
 
   const [prediction1990, setPrediction1990] = useState<number | null>(null);
   const [prediction2024, setPrediction2024] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPrediction = async () => {
+    const lookup = async () => {
       setLoading(true);
       try {
-        const cityData = CALIFORNIA_CITIES[city];
-        const res = await fetch("/api", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            median_income: cityData.median_income,
-            housing_median_age: cityData.housing_median_age,
-            ave_rooms: rooms,
-            ave_bedrooms: bedrooms,
-            population: cityData.population,
-            ave_occupancy: householdSize,
-            latitude: cityData.latitude,
-            longitude: cityData.longitude,
-          }),
-        });
-        const data = await res.json();
-        setPrediction1990(data.prediction_1990);
-        setPrediction2024(data.prediction_2024);
+        const predictions = await loadPredictions();
+        const key = `${city}|${rooms}|${bedrooms}|${householdSize}`;
+        const pred = predictions[key];
+        if (pred !== undefined) {
+          setPrediction1990(pred);
+          setPrediction2024(Math.round(pred * INFLATION_MULTIPLIER));
+        } else {
+          setPrediction1990(null);
+          setPrediction2024(null);
+        }
       } catch {
         setPrediction1990(null);
         setPrediction2024(null);
@@ -46,7 +50,7 @@ export default function Home() {
       }
     };
 
-    fetchPrediction();
+    lookup();
   }, [city, rooms, bedrooms, householdSize]);
 
   const cityData = CALIFORNIA_CITIES[city];

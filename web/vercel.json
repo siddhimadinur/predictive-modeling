@@ -1,9 +1,5 @@
 {
+  "framework": "nextjs",
   "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "functions": {
-    "api/*.py": {
-      "runtime": "@vercel/python@4.1.0"
-    }
-  }
+  "outputDirectory": ".next"
 }
