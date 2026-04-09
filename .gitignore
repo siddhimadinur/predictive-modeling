@@ -47,3 +47,12 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+# Node.js
+node_modules/
+.next/
+out/
+npm-debug.log*
+
+# Vercel
+.vercel
