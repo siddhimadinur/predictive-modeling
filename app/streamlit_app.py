@@ -17,7 +17,7 @@ st.set_page_config(**APP_CONFIG)
 
 # Import components
 from app.utils.model_loader import CaliforniaHousingModelLoader
-from app.components.input_forms import CaliforniaHousingInputForm, CaliforniaPresets
+from app.components.input_forms import CaliforniaHousingInputForm
 
 
 # ---------------------------------------------------------------------------
@@ -392,7 +392,7 @@ def render_prediction_page():
     """Render the main prediction page."""
 
     st.markdown('<div class="section-header"><span class="icon">&#127968;</span><h3>Property Price Prediction</h3></div>', unsafe_allow_html=True)
-    st.caption("Get instant valuations using ML models trained on California housing data.")
+    st.caption("Pick a city and describe your property to get an instant price estimate.")
 
     available_models = st.session_state.model_loader.get_available_models()
     if not available_models:
@@ -423,69 +423,18 @@ def render_prediction_page():
             if model_info.get('is_champion'):
                 st.markdown("**Champion Model**")
 
-    # ---- Input section (no outer columns to avoid nesting) ----
-    presets = CaliforniaPresets()
-    preset_data = presets.render_preset_selector()
-
+    # ---- Simplified input: city + 3 sliders ----
     input_form = CaliforniaHousingInputForm()
-
-    if preset_data:
-        st.markdown('<div class="accent-box">Using preset configuration. Modify values below if needed.</div>', unsafe_allow_html=True)
-        input_data = render_editable_preset_form(preset_data, input_form)
-    else:
-        input_data = input_form.render_complete_form()
-
-    final_input_data = input_form.get_input_data() or input_data
+    input_data = input_form.render_complete_form()
 
     # ---- Prediction result ----
     st.markdown("---")
-    render_prediction_panel(selected_model, final_input_data)
+    render_prediction_panel(selected_model, input_data)
 
     # Input summary
-    if final_input_data:
-        input_form.input_data = final_input_data
+    if input_data:
         input_form.render_input_summary()
-        render_california_context(final_input_data)
-
-
-def render_editable_preset_form(preset_data: Dict[str, Any], input_form: CaliforniaHousingInputForm) -> Dict[str, Any]:
-    """Render form with preset values that can be edited."""
-    st.markdown('<div class="section-header"><span class="icon">&#128295;</span><h3>Adjust Features</h3></div>', unsafe_allow_html=True)
-
-    with st.form("california_preset_form"):
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.markdown("**Location**")
-            longitude = st.number_input("Longitude", min_value=-124.5, max_value=-114.0, value=preset_data.get('longitude', -119.6), step=0.1)
-            latitude = st.number_input("Latitude", min_value=32.5, max_value=42.0, value=preset_data.get('latitude', 35.6), step=0.1)
-
-        with col2:
-            st.markdown("**Housing**")
-            ave_rooms = st.number_input("Avg Rooms/Household", min_value=1.0, max_value=15.0, value=preset_data.get('ave_rooms', 5.4), step=0.1)
-            ave_bedrooms = st.number_input("Avg Bedrooms/Household", min_value=0.3, max_value=5.0, value=preset_data.get('ave_bedrooms', 1.1), step=0.1)
-            housing_median_age = st.number_input("Housing Age (years)", min_value=1, max_value=52, value=preset_data.get('housing_median_age', 29), step=1)
-
-        with col3:
-            st.markdown("**Demographics**")
-            population = st.number_input("Population", min_value=3, max_value=10000, value=preset_data.get('population', 1425), step=50)
-            ave_occupancy = st.number_input("Avg Household Size", min_value=0.5, max_value=10.0, value=preset_data.get('ave_occupancy', 3.1), step=0.1)
-            median_income = st.number_input("Median Income ($10K)", min_value=0.5, max_value=15.0, value=preset_data.get('median_income', 3.9), step=0.1)
-
-        submitted = st.form_submit_button("Update Prediction")
-
-        if submitted:
-            updated_data = {
-                'longitude': longitude, 'latitude': latitude,
-                'ave_rooms': ave_rooms, 'ave_bedrooms': min(ave_bedrooms, ave_rooms),
-                'housing_median_age': housing_median_age,
-                'population': population, 'ave_occupancy': ave_occupancy,
-                'median_income': median_income,
-            }
-            input_form.input_data = updated_data
-            return updated_data
-
-    return preset_data
+        render_california_context(input_data)
 
 
 def render_prediction_panel(model_name: str, input_data: Dict[str, Any]):
@@ -507,29 +456,45 @@ def render_prediction_panel(model_name: str, input_data: Dict[str, Any]):
         with st.spinner("Calculating property value..."):
             prediction, additional_info = st.session_state.model_loader.predict(model_name, input_data)
 
-        # --- Large price display ---
-        st.markdown(f"""
-        <div class="prediction-result">
-            <div class="price">${prediction:,.0f}</div>
-            <div class="label">Predicted Property Value</div>
-        </div>
-        """, unsafe_allow_html=True)
+        # --- Inflation-adjusted estimate ---
+        # Dataset is from 1990 Census; CA home prices are ~4.5x higher today
+        INFLATION_MULTIPLIER = 4.5
+        adjusted_prediction = prediction * INFLATION_MULTIPLIER
 
-        # --- Gauge chart ---
+        # --- Large price display (both values) ---
+        price_cols = st.columns(2)
+        with price_cols[0]:
+            st.markdown(f"""
+            <div class="prediction-result">
+                <div class="price">${adjusted_prediction:,.0f}</div>
+                <div class="label">Estimated 2024 Value</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with price_cols[1]:
+            st.markdown(f"""
+            <div class="prediction-result" style="border-left-color: {UI_THEME['accent_color']};">
+                <div class="price" style="background: linear-gradient(135deg, #1B6B93, #0EA5E9); -webkit-background-clip: text; background-clip: text;">${prediction:,.0f}</div>
+                <div class="label">1990 Census Value (raw model output)</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.caption("The model is trained on 1990 Census data. The 2024 estimate applies a 4.5x inflation adjustment for California housing.")
+
+        # --- Gauge chart (adjusted value) ---
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number",
-            value=prediction,
+            value=adjusted_prediction,
             number=dict(prefix="$", valueformat=",.0f", font=dict(size=20)),
             gauge=dict(
-                axis=dict(range=[50000, 600000], tickprefix="$", tickformat=",.0f"),
+                axis=dict(range=[100000, 2500000], tickprefix="$", tickformat=",.0f"),
                 bar=dict(color=UI_THEME['primary_color']),
                 bgcolor="#F0F4F8",
                 steps=[
-                    dict(range=[50000, 200000], color="#E8ECF1"),
-                    dict(range=[200000, 400000], color="#D4E4F7"),
-                    dict(range=[400000, 600000], color="#BDD5F0"),
+                    dict(range=[100000, 800000], color="#E8ECF1"),
+                    dict(range=[800000, 1500000], color="#D4E4F7"),
+                    dict(range=[1500000, 2500000], color="#BDD5F0"),
                 ],
-                threshold=dict(line=dict(color="#1B6B93", width=3), thickness=0.8, value=prediction),
+                threshold=dict(line=dict(color="#1B6B93", width=3), thickness=0.8, value=adjusted_prediction),
             ),
         ))
         fig_gauge.update_layout(height=200, margin=dict(t=20, b=10, l=30, r=30), paper_bgcolor="rgba(0,0,0,0)")
