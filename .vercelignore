@@ -1,0 +1,9 @@
+src/
+scripts/
+tests/
+config/
+notebooks/
+_phases/
+app/*.py
+app/**/*.py
+*.ipynb
