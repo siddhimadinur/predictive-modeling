@@ -21,7 +21,7 @@ export default function Home() {
       setLoading(true);
       try {
         const cityData = CALIFORNIA_CITIES[city];
-        const res = await fetch("/api/predict", {
+        const res = await fetch("/api", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
