@@ -8,13 +8,18 @@ import { CALIFORNIA_CITIES } from "@/lib/cities";
 
 const INFLATION_MULTIPLIER = 4.5;
 
-// Pre-computed predictions loaded once
 let predictionsCache: Record<string, number> | null = null;
 
 async function loadPredictions(): Promise<Record<string, number>> {
   if (predictionsCache) return predictionsCache;
+  console.log("[Predictor] Loading predictions.json...");
   const res = await fetch("/predictions.json");
+  if (!res.ok) {
+    console.error("[Predictor] Failed to load predictions.json:", res.status, res.statusText);
+    throw new Error(`Failed to load predictions: ${res.status}`);
+  }
   predictionsCache = await res.json();
+  console.log("[Predictor] Loaded", Object.keys(predictionsCache!).length, "predictions");
   return predictionsCache!;
 }
 
@@ -27,22 +32,31 @@ export default function Home() {
   const [prediction1990, setPrediction1990] = useState<number | null>(null);
   const [prediction2024, setPrediction2024] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("[Predictor] Input changed:", { city, rooms, bedrooms, householdSize });
+
     const lookup = async () => {
       setLoading(true);
+      setError(null);
       try {
         const predictions = await loadPredictions();
         const key = `${city}|${rooms}|${bedrooms}|${householdSize}`;
         const pred = predictions[key];
+        console.log("[Predictor] Lookup key:", key, "result:", pred);
         if (pred !== undefined) {
           setPrediction1990(pred);
           setPrediction2024(Math.round(pred * INFLATION_MULTIPLIER));
         } else {
+          console.warn("[Predictor] No prediction found for key:", key);
           setPrediction1990(null);
           setPrediction2024(null);
         }
-      } catch {
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[Predictor] Error:", msg);
+        setError(msg);
         setPrediction1990(null);
         setPrediction2024(null);
       } finally {
@@ -78,6 +92,13 @@ export default function Home() {
           </span>
         </div>
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6 text-sm">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Inputs */}
