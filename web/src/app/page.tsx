@@ -113,7 +113,7 @@ export default function Home() {
               <div className="bg-gray-50 rounded-xl p-3 text-center">
                 <p className="text-xs text-gray-500">Median Income</p>
                 <p className="text-sm font-bold text-gray-800">
-                  ${(cityData.median_income * 10).toFixed(0)}K
+                  ${(cityData.display_income / 1000).toFixed(0)}K
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 text-center">

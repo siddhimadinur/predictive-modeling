@@ -68,7 +68,7 @@ export default function ExplorerPage() {
             <div key={city} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
               <h3 className="font-semibold text-gray-900">{city}</h3>
               <div className="mt-2 grid grid-cols-2 gap-1 text-xs text-gray-500">
-                <div>Income: <span className="font-medium text-gray-700">${(data.median_income * 10).toFixed(0)}K</span></div>
+                <div>Income: <span className="font-medium text-gray-700">${(data.display_income / 1000).toFixed(0)}K</span></div>
                 <div>Age: <span className="font-medium text-gray-700">{data.housing_median_age}yr</span></div>
               </div>
               {result?.loading ? (
