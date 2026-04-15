@@ -1,0 +1,26 @@
+{
+  "label2id": {
+    "Cardiovascular / Pulmonary": 0,
+    "Consult - History and Phy.": 1,
+    "Discharge Summary": 2,
+    "ENT - Otolaryngology": 3,
+    "Emergency Room Reports": 4,
+    "Gastroenterology": 5,
+    "General Medicine": 6,
+    "Hematology - Oncology": 7,
+    "Nephrology": 8,
+    "Neurology": 9,
+    "Neurosurgery": 10,
+    "Obstetrics / Gynecology": 11,
+    "Office Notes": 12,
+    "Ophthalmology": 13,
+    "Orthopedic": 14,
+    "Pain Management": 15,
+    "Pediatrics - Neonatal": 16,
+    "Psychiatry / Psychology": 17,
+    "Radiology": 18,
+    "SOAP / Chart / Progress Notes": 19,
+    "Surgery": 20,
+    "Urology": 21
+  }
+}
